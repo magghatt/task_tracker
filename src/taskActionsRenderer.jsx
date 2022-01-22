@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 
 export default (props) => {
-  const cellValue = props.valueFormatted ? props.valueFormatted : props.value;
+  const task_id = props.valueFormatted ? props.valueFormatted : props.value;
+  const handleEditTask = props.handleEditTask;
+  const handleDeleteTask = props.handleDeleteTask;
 
   const editButtonClicked = () => {
-    alert(`edit: ${cellValue}`);
-    //$('#openEditTaskModal').click();
-
+    console.log('task_id: '+ task_id)
+    handleEditTask(task_id);
   };
 
   const deleteButtonClicked = () => {
-    // need to use Confirm?
-    alert(`delete: ${cellValue}`);
+    handleDeleteTask(task_id);
   };
 
   return (

@@ -1,5 +1,5 @@
 .App {
-  text-align: center;
+
 }
 
 .App-logo {
@@ -19,7 +19,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /*justify-content: center;*/
   font-size: calc(10px + 2vmin);
   color: white;
 }
@@ -37,10 +37,29 @@
   }
 }
 
+.new-task-button {
+  margin-left: 20px !important;
+}
+
 .datepicker-input {
   border: none !important;
 }
 
 .btn-sm {
   margin: 5px;
+}
+
+.ag-cell-focus,.ag-cell-no-focus{
+  /*border:none !important;*/
+  border-color: transparent !important;
+}
+/* This CSS is to not apply the border for the column having 'no-border' class */
+.no-border.ag-cell:focus{
+  /*border:none !important;*/
+  border-color: transparent !important;
+  outline: none;
+}
+
+h3 {
+  margin-top: 10px !important;
 }
