@@ -12,6 +12,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Modal from 'react-bootstrap/Modal'
 import Button from 'react-bootstrap/Button';
 import FormControl from 'react-bootstrap/FormControl'
+import Form from 'react-bootstrap/Form'
 import InputGroup from 'react-bootstrap/InputGroup'
 // Date Picker
 import DatePicker from "react-datepicker";
@@ -50,7 +51,8 @@ function App() {
       id: React.createRef(),
       title: React.createRef(),
       description: React.createRef(),
-      due_date: React.createRef()
+      due_date: React.createRef(),
+      status: React.createRef()
     }
   });
   const [vars] = useState({
@@ -63,12 +65,13 @@ function App() {
       id: '',
       title: '',
       description: '',
-      due_date: ''
+      due_date: '',
+      status: ''
     },
     delete_task: {
       id: null
     },
-    gridApiRef: null
+    gridApiRef: null,
   });
 
   useEffect(() => {}, []);
@@ -93,18 +96,6 @@ function App() {
   }
 
   // Edit Task
-  function openEditTaskModal(task_id) {
-    const result = getMyTask(task_id);
-    result.then((value) => {
-      var t = value.data.getTask;
-      vars.edit_task.id = t.id
-      vars.edit_task.title = t.title
-      vars.edit_task.description = t.description
-      vars.edit_task.due_date = t.due_date
-      console.log('edit task_id: '+ vars.edit_task.id)
-      handleShowEditTask();
-    });
-  }
   async function getMyTask(task_id) {
     try {
       const result = await API.graphql(graphqlOperation(getTask, { id: task_id }));
@@ -113,14 +104,27 @@ function App() {
       console.log(e);
     }
   }
-  async function updateMyTask(id) {
+  function openEditTaskModal(task_id) {
+    const result = getMyTask(task_id);
+    result.then((value) => {
+      var t = value.data.getTask;
+      vars.edit_task.id = t.id
+      vars.edit_task.title = t.title
+      vars.edit_task.description = t.description
+      vars.edit_task.due_date = t.due_date
+      vars.edit_task.status = t.status
+      handleShowEditTask();
+    });
+  }
+  async function updateMyTask() {
     var edit_task = {
       id: vars.edit_task.id,
       title: vars.edit_task.title,
       description: vars.edit_task.description,
-      due_date: vars.edit_task.due_date
+      due_date: vars.edit_task.due_date,
+      status: vars.edit_task.status
     }
-    await API.graphql(graphqlOperation(updateTask, { input: edit_task}));
+    await API.graphql(graphqlOperation(updateTask, { input: edit_task }));
     closeEditTaskModal();
     renderAllTasks();
     // Todo:
@@ -133,7 +137,8 @@ function App() {
       id: '',
       title: '',
       description: '',
-      due_date: ''
+      due_date: '',
+      status: ''
     };
     handleCloseEditTask();
   }
@@ -272,6 +277,27 @@ function App() {
         <Modal.Body>
 
           <InputGroup className="mb-3">
+            <InputGroup.Text>Status</InputGroup.Text>
+            <Form.Select aria-label="task status"
+              ref={refs.edit_task.status}
+              value={vars.edit_task.status}
+              onChange={(e) => {
+                //console.log('before: '+ vars.edit_task.status)
+                //console.log('index: '+ e.target.selectedIndex)
+                const value = e.target.value
+                vars.edit_task.status = 'Completed'
+                refs.edit_task.status.current.value = value
+                //console.log('after: '+ vars.edit_task.status)
+                //console.log('index: '+ e.target.selectedIndex)
+              }}
+            >
+              <option value="New">New</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </Form.Select>
+          </InputGroup>
+
+          <InputGroup className="mb-3">
             <InputGroup.Text>Due Date</InputGroup.Text>
             <span className="form-control">
               <DatePicker id="new-due_date" className="form-control datepicker-input"
@@ -293,7 +319,7 @@ function App() {
               ref={refs.edit_task.title}
               defaultValue={vars.edit_task.title}
               onChange={(e) => {
-                const { name, value } = e.target;
+                const value = e.target.value;
                 vars.edit_task.title = value;
                 refs.edit_task.title.current.value = value;
               }}
@@ -306,7 +332,7 @@ function App() {
               ref={refs.edit_task.description}
               defaultValue={vars.edit_task.description}
               onChange={(e) => {
-                const { name, value } = e.target;
+                const value = e.target.value;
                 vars.edit_task.description = value;
                 refs.edit_task.description.current.value = value;
               }}
