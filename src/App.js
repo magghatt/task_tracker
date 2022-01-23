@@ -72,6 +72,7 @@ function App() {
       id: null
     },
     gridApiRef: null,
+    edit_task_status: ''
   });
 
   useEffect(() => {}, []);
@@ -87,12 +88,10 @@ function App() {
     handleCloseNewTask();
     // Toodo:
     // - check required fields
-    // - clear vars and inputs
-    // - refresh datagrid
     vars.new_task.status = 'New';
-    try{
-      await API.graphql(graphqlOperation(createTask, {input: vars.new_task}));
-    } catch(err){ console.log('error adding task') }
+    await API.graphql(graphqlOperation(createTask, {input: vars.new_task}));
+    clear_task(vars.new_task);
+    renderAllTasks();
   }
 
   // Edit Task
@@ -112,7 +111,7 @@ function App() {
       vars.edit_task.title = t.title
       vars.edit_task.description = t.description
       vars.edit_task.due_date = t.due_date
-      vars.edit_task.status = t.status
+      vars.edit_task.status = t.status || 'New'
       handleShowEditTask();
     });
   }
@@ -133,14 +132,18 @@ function App() {
     // - refresh datagrid
   }
   function closeEditTaskModal() {
-    vars.edit_task = {
+    clear_task(vars.edit_task);
+    handleCloseEditTask();
+  }
+
+  function clear_task(task) {
+    task = {
       id: '',
       title: '',
       description: '',
       due_date: '',
       status: ''
     };
-    handleCloseEditTask();
   }
 
   // Delete Task
@@ -165,6 +168,13 @@ function App() {
     const result = getAllTasks();
     result.then((value) => {
       const tasks = value.data.listTasks.items;
+      tasks.map((task) => {
+        const date_parts = task.due_date.split('/');
+        const year = date_parts[2]
+        const month = date_parts[0] - 1
+        const day = date_parts[1]
+        task.due_date = new Date(year, month, day)
+      });
       vars.gridApiRef.setRowData(tasks);
     });
   }
@@ -202,9 +212,16 @@ function App() {
                 cellRendererParams={{
                   handleEditTask: openEditTaskModal,
                   handleDeleteTask: openDeleteTaskModal
-                }}></AgGridColumn>
+                }}
+              ></AgGridColumn>
               <AgGridColumn field="status" sortable={true} width={100}></AgGridColumn>
-              <AgGridColumn field="due_date" headerName="Due Date" sortable={true} width={150}></AgGridColumn>
+              <AgGridColumn field="due_date" headerName="Due Date" sortable={true} width={150}
+              valueFormatter={(params) => {
+                const today = params.data.due_date
+                const simple_date = (today.getMonth() + 1) + '/' + today.getDate() + '/' + today.getFullYear();
+                return simple_date
+              }}
+              ></AgGridColumn>
               <AgGridColumn field="title" sortable={true} width={250}></AgGridColumn>
               <AgGridColumn field="description" sortable={true} width={345}></AgGridColumn>
           </AgGridReact>
@@ -282,13 +299,14 @@ function App() {
               ref={refs.edit_task.status}
               value={vars.edit_task.status}
               onChange={(e) => {
-                //console.log('before: '+ vars.edit_task.status)
-                //console.log('index: '+ e.target.selectedIndex)
-                const value = e.target.value
-                vars.edit_task.status = 'Completed'
-                refs.edit_task.status.current.value = value
-                //console.log('after: '+ vars.edit_task.status)
-                //console.log('index: '+ e.target.selectedIndex)
+                vars.edit_task.status = e.target.value
+                // Not sure why this doesn't work seamlessly on Select as it does with Text
+                setTimeout(() => {
+                  const val = vars.edit_task.status
+                  console.log('selected: '+ val)
+                  vars.edit_task.status = val
+                  refs.edit_task.status.current.value = val
+                }, 1);
               }}
             >
               <option value="New">New</option>
