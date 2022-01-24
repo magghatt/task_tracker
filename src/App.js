@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 import { render } from 'react-dom';
 import React, { useState, useEffect } from 'react';
@@ -29,7 +28,6 @@ function App() {
   const [rowData, setRowData] = useState([]);
   const [gridApi, setGridApi] = useState(null);
   const [gridColumnApi, setGridColumnApi] = useState(null);
-  var immutable_tasks;
   // Date picker
   const [dueDate, setDueDate] = useState(new Date());
   // New Task modal
@@ -72,15 +70,12 @@ function App() {
       id: null
     },
     gridApiRef: null,
-    edit_task_status: ''
   });
-
-  useEffect(() => {}, []);
 
   // New Task
   function openNewTaskModal() {
     const today = new Date();
-    const simple_date = (today.getMonth() + 1) + '/' + today.getDate() + '/' + today.getFullYear();
+    const simple_date = (today.getMonth() + 1) +'/'+ today.getDate() +'/'+ today.getFullYear()
     vars.new_task.due_date = simple_date;
     handleShowNewTask();
   }
@@ -107,15 +102,13 @@ function App() {
     const result = getMyTask(task_id);
     result.then((value) => {
       var t = value.data.getTask;
-      vars.edit_task.id = t.id
-      vars.edit_task.title = t.title
-      vars.edit_task.description = t.description
-      vars.edit_task.due_date = t.due_date
-      vars.edit_task.status = t.status || 'New'
+      vars.edit_task = t;
       handleShowEditTask();
     });
   }
   async function updateMyTask() {
+    // Todo:
+    // - check required fields
     var edit_task = {
       id: vars.edit_task.id,
       title: vars.edit_task.title,
@@ -126,16 +119,11 @@ function App() {
     await API.graphql(graphqlOperation(updateTask, { input: edit_task }));
     closeEditTaskModal();
     renderAllTasks();
-    // Todo:
-    // - check required fields
-    // - clear edit fields
-    // - refresh datagrid
   }
   function closeEditTaskModal() {
     clear_task(vars.edit_task);
     handleCloseEditTask();
   }
-
   function clear_task(task) {
     task = {
       id: '',
@@ -194,31 +182,29 @@ function App() {
           Task Tracker
           <Button onClick={openNewTaskModal} size="sm" className="new-task-button">Create</Button>
         </h3>
-
         <div className="ag-theme-alpine" style={{height: 500, width: 1000}}>
           <AgGridReact
             frameworkComponents={{taskActionsRenderer: TaskActionsRenderer}}
+            immutableData={true}
             getRowNodeId={(data) => { return data.id; }}
             onGridReady={(params) => {
               vars.gridApiRef = params.api;
               setGridApi(params.api);
-              immutable_tasks = [];
               renderAllTasks();
             }}
-            immutableData={true}
             >
-              <AgGridColumn field="id" headerName="" width={150}
+              <AgGridColumn field="id" width={150}
                 cellRenderer="taskActionsRenderer"
                 cellRendererParams={{
                   handleEditTask: openEditTaskModal,
                   handleDeleteTask: openDeleteTaskModal
                 }}
               ></AgGridColumn>
-              <AgGridColumn field="status" sortable={true} width={100}></AgGridColumn>
-              <AgGridColumn field="due_date" headerName="Due Date" sortable={true} width={150}
+              <AgGridColumn field="status" sortable={true} width={125}></AgGridColumn>
+              <AgGridColumn field="due_date" headerName="Due Date" sortable={true} width={125}
               valueFormatter={(params) => {
                 const today = params.data.due_date
-                const simple_date = (today.getMonth() + 1) + '/' + today.getDate() + '/' + today.getFullYear();
+                const simple_date = (today.getMonth() + 1) +'/'+ today.getDate() +'/'+ today.getFullYear()
                 return simple_date
               }}
               ></AgGridColumn>
@@ -228,8 +214,7 @@ function App() {
         </div>
       </header>
 
-      <Modal
-        id="new-task-modal"
+      <Modal id="new-task-modal"
         show={showNewTask}
         onHide={handleCloseNewTask}
         backdrop={true}
@@ -283,8 +268,7 @@ function App() {
         </Modal.Footer>
       </Modal>
 
-      <Modal
-        id="edit-task-modal"
+      <Modal id="edit-task-modal"
         show={showEditTask}
         onHide={handleCloseEditTask}
       >
@@ -292,7 +276,6 @@ function App() {
           <Modal.Title>Edit Task</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-
           <InputGroup className="mb-3">
             <InputGroup.Text>Status</InputGroup.Text>
             <Form.Select aria-label="task status"
@@ -314,7 +297,6 @@ function App() {
               <option value="Completed">Completed</option>
             </Form.Select>
           </InputGroup>
-
           <InputGroup className="mb-3">
             <InputGroup.Text>Due Date</InputGroup.Text>
             <span className="form-control">
@@ -330,7 +312,6 @@ function App() {
                 }} />
             </span>
           </InputGroup>
-
           <InputGroup className="mb-3">
             <InputGroup.Text id="inputGroup-sizing-default">Title</InputGroup.Text>
             <FormControl id="edit-title" aria-label="Title" aria-describedby="inputGroup-sizing-default"
@@ -343,7 +324,6 @@ function App() {
               }}
             />
           </InputGroup>
-
           <InputGroup>
             <InputGroup.Text>Description</InputGroup.Text>
             <FormControl as="textarea" id="new-description" aria-label="Description"
@@ -356,18 +336,14 @@ function App() {
               }}
             />
           </InputGroup>
-
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" size="md" onClick={closeEditTaskModal}>
-            Close
-          </Button>
+          <Button variant="secondary" size="md" onClick={closeEditTaskModal}>Close</Button>
           <Button variant="primary" onClick={updateMyTask}>Save</Button>
         </Modal.Footer>
       </Modal>
 
-      <Modal
-        id="delete-task-modal"
+      <Modal id="delete-task-modal"
         show={showDeleteTask}
         onHide={handleCloseDeleteTask}
       >
@@ -375,18 +351,13 @@ function App() {
           <Modal.Title>Warning!</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-
           Are you sure you want to delete this task?
-
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" size="md" onClick={closeDeleteTaskModal}>
-            Cancel
-          </Button>
+          <Button variant="secondary" size="md" onClick={closeDeleteTaskModal}>Cancel</Button>
           <Button variant="warning" onClick={deleteMyTask}>Yes, Delete it!</Button>
         </Modal.Footer>
       </Modal>
-
     </div>
   );
 }
