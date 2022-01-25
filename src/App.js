@@ -174,6 +174,11 @@ function App() {
       console.log(e);
     }
   }
+  function caseInsensitiveCompare(leftVal, rightVal) {
+    const lower_left = leftVal.toLowerCase()
+    const lower_right = rightVal.toLowerCase()
+    return lower_left.localeCompare(lower_right)
+  }
 
   return (
     <div className="App">
@@ -193,7 +198,7 @@ function App() {
               renderAllTasks();
             }}
             >
-              <AgGridColumn field="id" width={150}
+              <AgGridColumn field="id" headerName="" width={150}
                 cellRenderer="taskActionsRenderer"
                 cellRendererParams={{
                   handleEditTask: openEditTaskModal,
@@ -208,8 +213,12 @@ function App() {
                 return simple_date
               }}
               ></AgGridColumn>
-              <AgGridColumn field="title" sortable={true} width={250}></AgGridColumn>
-              <AgGridColumn field="description" sortable={true} width={345}></AgGridColumn>
+              <AgGridColumn field="title" sortable={true} width={250}
+                comparator={caseInsensitiveCompare}
+              ></AgGridColumn>
+              <AgGridColumn field="description" sortable={true} width={345}
+                comparator={caseInsensitiveCompare}
+              ></AgGridColumn>
           </AgGridReact>
         </div>
       </header>
